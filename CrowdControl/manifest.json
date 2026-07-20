@@ -1,0 +1,8 @@
+{
+  "name": "Crowd Control",
+  "description": "Twitch viewers control the game via chat.",
+  "author": "gokumatrix",
+  "version": "1.0.0",
+  "tags": ["script", "twitch", "crowd-control"],
+  "requires_unsafe": true
+}

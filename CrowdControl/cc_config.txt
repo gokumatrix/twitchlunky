@@ -1,0 +1,24 @@
+# all chatters
+EVERYBODY = ['heal_player', 'full_heal', 'give_bombs', 'give_ropes', 'give_paste', 'give_climbgloves', 'give_spikeshoes', 'give_springshoes', 'give_kapala', 'give_aliencompass', 'give_elixir',  'give_royaljelly', 'give_jetpack', 'give_vladscape', 'give_cape', 'give_shotgun', 'give_freezeray', 'give_teleporter', 'give_scepter', 'give_plasma', 'remove_bombs', 'remove_ropes',  'spawn_snake', 'spawn_spider', 'spawn_bat', 'spawn_skeleton', 'spawn_hornedlizard', 'spawn_caveman', 'spawn_scorpion', 'spawn_mantrap', 'spawn_witchdoctor', 'spawn_vampire', 'spawn_ufo', 'spawn_shopkeeper', 'spawn_hiredhand', 'anubis_coffin', 'spawn_lavapot', 'speed_up', 'slow_motion', 'level_feeling' ]
+
+EVERYBODY_TIMEOUT = 30s # the user that triggered a command can only do a command every 30 seconds
+
+# all subs
+SUBSCRIBERS_ONLY = [ 'enemy_rain', 'bomb_rain', 'explode_all', 'spawn_vlad', 'spawn_anubis2', 'spawn_apep', 'spawn_jellyfish', 'spawn_olmec', 'spawn_ghost', 'give_truecrown', 'stun_player', 'giant_head', 'random_teleport']
+
+SUBSCRIBERS_TIMEOUT = 15s # subscribers can only do a command every 15 seconds
+
+#these require points
+POINTS_ONLY = ['destroy_altar', 'force_dark', 'poison_player', 'curse_player','spawn_arrowtrap', 'spawn_tnt', 'spawn_boulder', 'remove_helditem', 'remove_backitem', 'punish', 'steal_item', 'spawn_kali_altar', 'hadoken', 'randomize_item']
+
+#these will be voted on
+VOTE_SYSTEM = [ 'force_outpost', 'kill_player', 'forgive_player' ]
+POLL_LASTS = 120s # a new poll will spawn with 2 random values from VOTE_SYSTEM and "No effect" as well.
+POLL_TIMEOUT = 300s #a new poll won't start until 300 seconds after the last poll ended
+
+# Regardless of who does it, these can't be done for X seconds
+TRIGGER_COOLDOWN = ["hurt_player"]
+COOLDOWN_TIME = 10s
+
+# Put things here if you don't want them to do anything, but may want to add them back later
+NO_EFFECT = [  ] 

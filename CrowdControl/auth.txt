@@ -1,0 +1,4 @@
+[auth]
+CHANNEL = channelname
+CLIENT_ID = abcd1234
+CLIENT_SECRET = efgh5678
