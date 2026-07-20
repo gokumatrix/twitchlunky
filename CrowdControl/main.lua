@@ -7,7 +7,7 @@
 meta = {
     name        = "Crowd Control",
     version     = "1.0.0",
-    author      = "CrowdControl Community",
+    author      = "gokumatrix with a bunch of help from random AI because I didn't know lua",
     description = "Twitch viewers control the game via chat",
     unsafe      = true,
 }
