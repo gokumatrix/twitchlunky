@@ -196,7 +196,7 @@ fx.give_plasma = function(r) local p=P(); if not p then return false end; drop_h
 -- Debuffs
 fx.hurt_player     = function(r) local p=P(); if not p or p.health<=0 then return false end; p.health=math.max(p.health-1,1); p.stun_timer=30; return true end
 fx.poison_player   = function(r) local p=P(); if not p then return false end; poison_entity(p.uid); return true end
-fx.curse_player    = function(r) local p=P(); if not p then return false end; p.more_flags=set_flag(p.more_flags, 15); p.health=1 return true end
+fx.curse_player    = function(r) local p=P(); if not p then return false end; p.more_flags=set_flag(p.more_flags, 15); p.health=1; return true end
 fx.remove_bombs    = function(r) local p=P(); if not p or p.inventory.bombs<=0 then return false end; p.inventory.bombs=0; return true end
 fx.remove_ropes    = function(r) local p=P(); if not p or p.inventory.ropes<=0 then return false end; p.inventory.ropes=0; return true end
 fx.remove_helditem = function(r) local p=P(); if not p or not p.holding_uid or p.holding_uid<=0 then return false end; drop(p.uid,p.holding_uid); kill_entity(p.holding_uid); return true end
@@ -333,7 +333,6 @@ local function handle(msg)
     if not IL() or not P() then resp(id,"retry"); return end
     local h = fx[code]
     if not h then resp(id,"failure"); return end
-    message("text="..tostring(msg.text))
     local ok,res = pcall(h, {id=id,code=code,viewer=msg.viewer or "Anon",duration=tonumber(msg.duration) or 0,text=msg.text or ""})
     if not ok then resp(id,"retry"); return end
     if res=="timed" then ann(msg.viewer or "Anon",code)

@@ -99,11 +99,8 @@ def load_config(path):
 
 auth_config = configparser.ConfigParser()
 auth_config.read("..\\auth.txt")
-print(dir(auth_config.keys()))
-input()
 CHANNEL = auth_config['auth']['CHANNEL']
 CLIENT_ID = auth_config['auth']['CLIENT_ID']
-print(CLIENT_ID)
 CLIENT_SECRET = auth_config['auth']['CLIENT_SECRET']
 OAUTH = None
 BOT_NAME = "CrowdControlBot"
