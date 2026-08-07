@@ -778,7 +778,36 @@ def get_channel_id(oauth):
         log.warning("Could not get channel ID: %s", e)
         return None
 
-
+def stdin_loop():
+    """Read commands from terminal for local testing."""
+    print("  DEBUG MODE — type effect codes to trigger them")
+    print("  Examples: spawn_snake, give_jetpack, kill_player")
+    print("  Or: effect_code viewer_name custom text here")
+    print("  Type 'list' to see all effects, 'quit' to exit\n")
+    while True:
+        try:
+            line = input(">> ").strip()
+            if not line:
+                continue
+            if line == "quit":
+                os._exit(0)
+            if line == "list":
+                for code, info in sorted(EFFECTS.items()):
+                    print(f"  {code:25s} {info['name']}")
+                continue
+            parts = line.split(None, 2)
+            code = parts[0]
+            viewer = parts[1] if len(parts) > 1 else "Debug"
+            text = parts[2] if len(parts) > 2 else ""
+            if code not in EFFECTS:
+                print(f"  Unknown effect: {code}")
+                continue
+            queue(code, viewer, "debug", text)
+            print(f"  Queued: {code} from {viewer}")
+        except EOFError:
+            break
+        except KeyboardInterrupt:
+            break
 # ═══════════════════════════════════════════════════════════════
 #  MAIN
 # ═══════════════════════════════════════════════════════════════
@@ -795,6 +824,7 @@ def main():
     ap.add_argument("--no-chat", action="store_true")
     ap.add_argument("--no-points", action="store_true")
     ap.add_argument("--no-polls", action="store_true")
+    ap.add_argument("--debug", action="store_true", help="Local testing mode: no auth, no Twitch, stdin commands")
     a = ap.parse_args()
 
     # Load config
@@ -809,56 +839,63 @@ def main():
     threading.Thread(target=HTTPServer(("0.0.0.0", a.http_port), H).serve_forever, daemon=True).start()
     threading.Thread(target=udp_loop, daemon=True).start()
 
-    # OAuth
-    if not a.oauth or a.oauth == "oauth:your_token_here" or a.oauth is None:
-        a.oauth = get_oauth_token(CLIENT_ID, CLIENT_SECRET)
-        if not a.oauth:
-            print("Failed to get token. Exiting.")
-            return
+    if a.debug:
+        # Debug mode — no auth, no Twitch, just HTTP + UDP + stdin
+        print(f"\n  Spelunky 2 CC — DEBUG MODE")
+        print(f"  Game polls: localhost:{a.http_port}/poll")
+        print(f"  Trigger: localhost:{a.http_port}/trigger/effect_code/viewer")
+        print(f"  Config: {config_path}\n")
+        stdin_loop()
+    else:
+        # OAuth
+        if not a.oauth or a.oauth == "oauth:your_token_here" or a.oauth is None:
+            a.oauth = get_oauth_token(CLIENT_ID, CLIENT_SECRET)
+            if not a.oauth:
+                print("Failed to get token. Exiting.")
+                return
 
-    # IRC
-    if not a.no_chat:
-        irc_ref = IRC(a.channel, a.oauth, BOT_NAME)
-        irc_ref.connect()
-        threading.Thread(target=irc_ref.run, daemon=True).start()
+        # IRC
+        if not a.no_chat:
+            irc_ref = IRC(a.channel, a.oauth, BOT_NAME)
+            irc_ref.connect()
+            threading.Thread(target=irc_ref.run, daemon=True).start()
 
-    # Poll system
-    if not a.no_polls and conf.get("VOTE_SYSTEM"):
-        def say_fn(msg):
-            if irc_ref: irc_ref.say(msg)
-        poll_system = PollSystem(
-            conf["VOTE_SYSTEM"],
-            conf.get("POLL_LASTS", 120),
-            conf.get("POLL_TIMEOUT", 300),
-            say_fn,
-        )
-        threading.Thread(target=poll_loop, daemon=True).start()
-        log.info("Poll system active: %d effects, %ds polls, %ds gap",
-                 len(conf["VOTE_SYSTEM"]), conf["POLL_LASTS"], conf["POLL_TIMEOUT"])
+        # Poll system
+        if not a.no_polls and conf.get("VOTE_SYSTEM"):
+            def say_fn(msg):
+                if irc_ref: irc_ref.say(msg)
+            poll_system = PollSystem(
+                conf["VOTE_SYSTEM"],
+                conf.get("POLL_LASTS", 120),
+                conf.get("POLL_TIMEOUT", 300),
+                say_fn,
+            )
+            threading.Thread(target=poll_loop, daemon=True).start()
+            log.info("Poll system active: %d effects, %ds polls, %ds gap",
+                     len(conf["VOTE_SYSTEM"]), conf["POLL_LASTS"], conf["POLL_TIMEOUT"])
 
-    # PubSub
-    if not a.no_points:
-        cid = get_channel_id(a.oauth)
-        if cid:
-            try:
-                import websocket
-                ps = PubSub(a.oauth, cid, on_redeem)
-                threading.Thread(target=ps.run, daemon=True).start()
-                threading.Thread(target=ps.ping_loop, daemon=True).start()
-            except ImportError:
-                log.warning("pip install websocket-client  (for channel points)")
+        # PubSub
+        if not a.no_points:
+            cid = get_channel_id(a.oauth)
+            if cid:
+                try:
+                    import websocket
+                    ps = PubSub(a.oauth, cid, on_redeem)
+                    threading.Thread(target=ps.run, daemon=True).start()
+                    threading.Thread(target=ps.ping_loop, daemon=True).start()
+                except ImportError:
+                    log.warning("pip install websocket-client  (for channel points)")
 
-    print(f"\n  Spelunky 2 CC — #{a.channel}")
-    print(f"  Chat: {'ON' if not a.no_chat else 'OFF'}  Points: {'ON' if not a.no_points else 'OFF'}  Polls: {'ON' if not a.no_polls and conf.get('VOTE_SYSTEM') else 'OFF'}")
-    print(f"  Config: {config_path}")
-    print(f"  Game polls: localhost:{a.http_port}/poll")
-    print(f"  Debug: localhost:{a.http_port}/config  localhost:{a.http_port}/status\n")
+        print(f"\n  Spelunky 2 CC — #{a.channel}")
+        print(f"  Chat: {'ON' if not a.no_chat else 'OFF'}  Points: {'ON' if not a.no_points else 'OFF'}  Polls: {'ON' if not a.no_polls and conf.get('VOTE_SYSTEM') else 'OFF'}")
+        print(f"  Config: {config_path}")
+        print(f"  Game polls: localhost:{a.http_port}/poll")
+        print(f"  Debug: localhost:{a.http_port}/config  localhost:{a.http_port}/status\n")
 
-    try:
-        while True:
-            time.sleep(60)
-    except KeyboardInterrupt:
-        pass
-
+        try:
+            while True:
+                time.sleep(60)
+        except KeyboardInterrupt:
+            pass
 if __name__ == "__main__":
     main()

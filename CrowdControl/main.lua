@@ -247,8 +247,48 @@ fx.spawn_kali_altar = function(r) local p=P(); if not p then return false end; r
 
 -- Level mods
 -- fx.level_dark        = function(r) if not IL() then return false end; local o=state.level_flags; state.level_flags=set_flag(state.level_flags,18); reg_timed(r.id,r.code,r.duration,function() state.level_flags=o end); return "timed" end
-fx.speed_up          = function(r) local o=get_speedhack(); set_speedhack(o*1.5); reg_timed(r.id,r.code,r.duration,function() set_speedhack(o) end); return "timed" end
-fx.slow_motion       = function(r) local o=get_speedhack(); set_speedhack(o*0.5); reg_timed(r.id,r.code,r.duration,function() set_speedhack(o) end); return "timed" end
+local original_speed = nil
+local slow_stacks = 0
+local fast_stacks = 0
+local MAX_SPEED_STACKS = 3
+
+fx.slow_motion = function(r)
+    if slow_stacks >= MAX_SPEED_STACKS then return false end
+    if slow_stacks == 0 and fast_stacks == 0 then original_speed = get_speedhack() end
+    slow_stacks = slow_stacks + 1
+    set_speedhack(original_speed * (0.5 ^ slow_stacks) * (1.5 ^ fast_stacks))
+    reg_timed(r.id, r.code, r.duration, function()
+        slow_stacks = slow_stacks - 1
+        if slow_stacks <= 0 and fast_stacks <= 0 then
+            set_speedhack(original_speed)
+            slow_stacks = 0
+            original_speed = nil
+        else
+            set_speedhack(original_speed * (0.5 ^ slow_stacks) * (1.5 ^ fast_stacks))
+        end
+    end)
+    return "timed"
+end
+
+fx.speed_up = function(r)
+    if fast_stacks >= MAX_SPEED_STACKS then return false end
+    if slow_stacks == 0 and fast_stacks == 0 then original_speed = get_speedhack() end
+    fast_stacks = fast_stacks + 1
+    set_speedhack(original_speed * (0.5 ^ slow_stacks) * (1.5 ^ fast_stacks))
+    reg_timed(r.id, r.code, r.duration, function()
+        fast_stacks = fast_stacks - 1
+        if slow_stacks <= 0 and fast_stacks <= 0 then
+            set_speedhack(original_speed)
+            fast_stacks = 0
+            original_speed = nil
+        else
+            set_speedhack(original_speed * (0.5 ^ slow_stacks) * (1.5 ^ fast_stacks))
+        end
+    end)
+    return "timed"
+end
+
+
 fx.spawn_ghost = function(r) if not IL() then return false end; local p=P(); if not p then return false end; spawn(ENT_TYPE.MONS_GHOST, p.x+3, p.y+2, p.layer, 0, 0); return true end
 fx.level_feeling = function(r)
     if not IL() then return false end
