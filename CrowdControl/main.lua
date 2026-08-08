@@ -180,6 +180,7 @@ fx.give_aliencompass     = function(r) local p=P(); if not p then return false e
 fx.give_elixir     = function(r) local p=P(); if not p then return false end; return spawn_entity_over(ENT_TYPE.ITEM_PICKUP_ELIXIR,p.uid,0,0)~=nil end
 fx.give_truecrown     = function(r) local p=P(); if not p then return false end; return spawn_entity_over(ENT_TYPE.ITEM_PICKUP_TRUECROWN,p.uid,0,0)~=nil end
 fx.give_royaljelly     = function(r) local p=P(); if not p then return false end; return spawn_entity_over(ENT_TYPE.ITEM_PICKUP_ROYALJELLY,p.uid,0,0)~=nil end
+fx.give_ankh     = function(r) local p=P(); if not p then return false end; return spawn_entity_over(ENT_TYPE.ITEM_PICKUP_ANKH,p.uid,0,0)~=nil end
 
 -- Back Items
 fx.give_jetpack    = function(r) local p=P(); if not p then return false end; local u=spawn_entity_over(E.jetpack,p.uid,0,0.5); if u then pick_up(p.uid,u) end; return u~=nil end

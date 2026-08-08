@@ -124,6 +124,7 @@ EFFECTS = {
     "give_spikeshoes":   {"name": "Spike Shoes"},
     "give_springshoes":  {"name": "Spring Shoes"},
     "give_kapala":       {"name": "Kapala"},
+    "give_ankh":         {"name": "Ankh"}
     "give_aliencompass": {"name": "Alien Compass"},
     "give_elixir":       {"name": "Elixir"},
     "give_truecrown":    {"name": "True Crown"},
